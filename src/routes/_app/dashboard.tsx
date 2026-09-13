@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/misc";
 import { getDashboard } from "@/lib/lms";
 import { formatDate, formatDateTime, platformLabel, roleLabel } from "@/lib/lms/format";
+import { publicDisplayName } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/dashboard")({ component: Dashboard });
 
@@ -50,7 +51,15 @@ function Dashboard() {
   return (
     <div>
       <PageHeader
-        title={actor.role === "student" ? `Assalam-o-Alaikum, ${actor.displayName.split(" ")[0]}` : "Campus overview"}
+        title={
+          actor.role === "student"
+            ? `Assalam-o-Alaikum, ${publicDisplayName(actor.displayName).split(" ")[0]}`
+            : actor.role === "class_incharge"
+              ? `Your class${actor.className ? ` · ${actor.className} ${actor.sectionName ?? ""}` : ""}`
+              : actor.role === "teacher"
+                ? "Your classes"
+                : "Campus overview"
+        }
         subtitle={`${roleLabel(actor.role)}${actor.className ? ` · ${actor.className} ${actor.sectionName ?? ""}` : ""} · Session 2025–26`}
       />
 
@@ -59,6 +68,18 @@ function Dashboard() {
           <StatCard label="Attendance" value={d.myAttendance != null ? `${d.myAttendance}%` : "—"} hint="Present + late / enrolled days" icon={<ClipboardCheck className="h-5 w-5" />} />
           <StatCard label="Mid-term GPA" value={d.myGpa ?? "—"} hint="HSSC-I published papers" icon={<GraduationCap className="h-5 w-5" />} />
           <StatCard label="Open assignments" value={d.myPending ?? 0} hint="Not yet submitted" icon={<PenSquare className="h-5 w-5" />} />
+        </div>
+      ) : actor.role === "teacher" || actor.role === "class_incharge" ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            label="My students"
+            value={d.incharge.reduce((n, s) => n + s.students, 0) || d.totals.students}
+            hint={d.incharge[0] ? `${d.incharge[0].class_name} ${d.incharge[0].section_name}` : "Assigned sections"}
+            icon={<GraduationCap className="h-5 w-5" />}
+          />
+          <StatCard label="Subjects" value={d.teaching.length} hint="Your teaching load" icon={<BookOpen className="h-5 w-5" />} />
+          <StatCard label="Pending grading" value={d.totals.pendingGrading} hint="Submitted work waiting on you" icon={<PenSquare className="h-5 w-5" />} />
+          <StatCard label="Live classes" value={d.upcomingMeetings.length} hint="Meet / Zoom / Teams" icon={<Video className="h-5 w-5" />} />
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -69,8 +90,28 @@ function Dashboard() {
         </div>
       )}
 
+      {(actor.role === "teacher" || actor.role === "class_incharge") && d.teaching.length ? (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {d.incharge.length ? (
+            <Button asChild>
+              <Link to="/my-class">Open class desk</Link>
+            </Button>
+          ) : (
+            <Button asChild variant="outline">
+              <Link to="/my-class">My assigned classes</Link>
+            </Button>
+          )}
+          <Button asChild variant="outline">
+            <Link to="/quizzes">Create quiz</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/meetings">Schedule Meet</Link>
+          </Button>
+        </div>
+      ) : null}
+
       <div className="mt-6 grid gap-4 lg:grid-cols-5">
-        <div className="rounded-xl border border-line bg-surface p-5 shadow-[var(--shadow-card)] lg:col-span-3">
+        <div className="min-w-0 rounded-xl border border-line bg-surface p-5 shadow-[var(--shadow-card)] lg:col-span-3">
           <div className="text-sm font-medium text-ink">College attendance</div>
           <div className="text-xs text-muted">Last ten working days</div>
           <div className="mt-4 h-52">

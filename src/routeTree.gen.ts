@@ -13,12 +13,14 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppAttendanceRouteImport } from './routes/_app/attendance'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
 import { Route as AppClassesRouteImport } from './routes/_app/classes'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppMaterialsRouteImport } from './routes/_app/materials'
 import { Route as AppMeetingsRouteImport } from './routes/_app/meetings'
+import { Route as AppMyClassRouteImport } from './routes/_app/my-class'
 import { Route as AppNotificationsRouteImport } from './routes/_app/notifications'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
@@ -29,6 +31,7 @@ import { Route as AppStudentsRouteImport } from './routes/_app/students'
 import { Route as AppSubjectsRouteImport } from './routes/_app/subjects'
 import { Route as AppTeachersRouteImport } from './routes/_app/teachers'
 import { Route as AppTimetableRouteImport } from './routes/_app/timetable'
+import { Route as AppUsersRouteImport } from './routes/_app/users'
 import { Route as AppAssignmentsIndexRouteImport } from './routes/_app/assignments.index'
 import { Route as AppAssignmentsIdRouteImport } from './routes/_app/assignments.$id'
 import { Route as AppForumIndexRouteImport } from './routes/_app/forum.index'
@@ -55,6 +58,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 const AppAttendanceRoute = AppAttendanceRouteImport.update({
   id: '/attendance',
@@ -84,6 +92,11 @@ const AppMaterialsRoute = AppMaterialsRouteImport.update({
 const AppMeetingsRoute = AppMeetingsRouteImport.update({
   id: '/meetings',
   path: '/meetings',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppMyClassRoute = AppMyClassRouteImport.update({
+  id: '/my-class',
+  path: '/my-class',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppNotificationsRoute = AppNotificationsRouteImport.update({
@@ -136,6 +149,11 @@ const AppTimetableRoute = AppTimetableRouteImport.update({
   path: '/timetable',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppUsersRoute = AppUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppAssignmentsIndexRoute = AppAssignmentsIndexRouteImport.update({
   id: '/assignments/',
   path: '/assignments/',
@@ -176,12 +194,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/admin': typeof AppAdminRoute
   '/attendance': typeof AppAttendanceRoute
   '/calendar': typeof AppCalendarRoute
   '/classes': typeof AppClassesRoute
   '/dashboard': typeof AppDashboardRoute
   '/materials': typeof AppMaterialsRoute
   '/meetings': typeof AppMeetingsRoute
+  '/my-class': typeof AppMyClassRoute
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/reports': typeof AppReportsRoute
@@ -192,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/subjects': typeof AppSubjectsRoute
   '/teachers': typeof AppTeachersRoute
   '/timetable': typeof AppTimetableRoute
+  '/users': typeof AppUsersRoute
   '/assignments/$id': typeof AppAssignmentsIdRoute
   '/forum/$id': typeof AppForumIdRoute
   '/quizzes/$id': typeof AppQuizzesIdRoute
@@ -204,12 +225,14 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/admin': typeof AppAdminRoute
   '/attendance': typeof AppAttendanceRoute
   '/calendar': typeof AppCalendarRoute
   '/classes': typeof AppClassesRoute
   '/dashboard': typeof AppDashboardRoute
   '/materials': typeof AppMaterialsRoute
   '/meetings': typeof AppMeetingsRoute
+  '/my-class': typeof AppMyClassRoute
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/reports': typeof AppReportsRoute
@@ -220,6 +243,7 @@ export interface FileRoutesByTo {
   '/subjects': typeof AppSubjectsRoute
   '/teachers': typeof AppTeachersRoute
   '/timetable': typeof AppTimetableRoute
+  '/users': typeof AppUsersRoute
   '/assignments/$id': typeof AppAssignmentsIdRoute
   '/forum/$id': typeof AppForumIdRoute
   '/quizzes/$id': typeof AppQuizzesIdRoute
@@ -234,12 +258,14 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/_app/admin': typeof AppAdminRoute
   '/_app/attendance': typeof AppAttendanceRoute
   '/_app/calendar': typeof AppCalendarRoute
   '/_app/classes': typeof AppClassesRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/materials': typeof AppMaterialsRoute
   '/_app/meetings': typeof AppMeetingsRoute
+  '/_app/my-class': typeof AppMyClassRoute
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/reports': typeof AppReportsRoute
@@ -250,6 +276,7 @@ export interface FileRoutesById {
   '/_app/subjects': typeof AppSubjectsRoute
   '/_app/teachers': typeof AppTeachersRoute
   '/_app/timetable': typeof AppTimetableRoute
+  '/_app/users': typeof AppUsersRoute
   '/_app/assignments/$id': typeof AppAssignmentsIdRoute
   '/_app/forum/$id': typeof AppForumIdRoute
   '/_app/quizzes/$id': typeof AppQuizzesIdRoute
@@ -264,12 +291,14 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/onboarding'
+    | '/admin'
     | '/attendance'
     | '/calendar'
     | '/classes'
     | '/dashboard'
     | '/materials'
     | '/meetings'
+    | '/my-class'
     | '/notifications'
     | '/profile'
     | '/reports'
@@ -280,6 +309,7 @@ export interface FileRouteTypes {
     | '/subjects'
     | '/teachers'
     | '/timetable'
+    | '/users'
     | '/assignments/$id'
     | '/forum/$id'
     | '/quizzes/$id'
@@ -292,12 +322,14 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/onboarding'
+    | '/admin'
     | '/attendance'
     | '/calendar'
     | '/classes'
     | '/dashboard'
     | '/materials'
     | '/meetings'
+    | '/my-class'
     | '/notifications'
     | '/profile'
     | '/reports'
@@ -308,6 +340,7 @@ export interface FileRouteTypes {
     | '/subjects'
     | '/teachers'
     | '/timetable'
+    | '/users'
     | '/assignments/$id'
     | '/forum/$id'
     | '/quizzes/$id'
@@ -321,12 +354,14 @@ export interface FileRouteTypes {
     | '/_app'
     | '/login'
     | '/onboarding'
+    | '/_app/admin'
     | '/_app/attendance'
     | '/_app/calendar'
     | '/_app/classes'
     | '/_app/dashboard'
     | '/_app/materials'
     | '/_app/meetings'
+    | '/_app/my-class'
     | '/_app/notifications'
     | '/_app/profile'
     | '/_app/reports'
@@ -337,6 +372,7 @@ export interface FileRouteTypes {
     | '/_app/subjects'
     | '/_app/teachers'
     | '/_app/timetable'
+    | '/_app/users'
     | '/_app/assignments/$id'
     | '/_app/forum/$id'
     | '/_app/quizzes/$id'
@@ -384,6 +420,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/attendance': {
       id: '/_app/attendance'
       path: '/attendance'
@@ -424,6 +467,13 @@ declare module '@tanstack/react-router' {
       path: '/meetings'
       fullPath: '/meetings'
       preLoaderRoute: typeof AppMeetingsRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/my-class': {
+      id: '/_app/my-class'
+      path: '/my-class'
+      fullPath: '/my-class'
+      preLoaderRoute: typeof AppMyClassRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/notifications': {
@@ -496,6 +546,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTimetableRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/users': {
+      id: '/_app/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AppUsersRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/assignments/': {
       id: '/_app/assignments/'
       path: '/assignments'
@@ -549,12 +606,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
   AppAttendanceRoute: typeof AppAttendanceRoute
   AppCalendarRoute: typeof AppCalendarRoute
   AppClassesRoute: typeof AppClassesRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppMaterialsRoute: typeof AppMaterialsRoute
   AppMeetingsRoute: typeof AppMeetingsRoute
+  AppMyClassRoute: typeof AppMyClassRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppReportsRoute: typeof AppReportsRoute
@@ -565,6 +624,7 @@ interface AppRouteRouteChildren {
   AppSubjectsRoute: typeof AppSubjectsRoute
   AppTeachersRoute: typeof AppTeachersRoute
   AppTimetableRoute: typeof AppTimetableRoute
+  AppUsersRoute: typeof AppUsersRoute
   AppAssignmentsIdRoute: typeof AppAssignmentsIdRoute
   AppForumIdRoute: typeof AppForumIdRoute
   AppQuizzesIdRoute: typeof AppQuizzesIdRoute
@@ -574,12 +634,14 @@ interface AppRouteRouteChildren {
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
   AppAttendanceRoute: AppAttendanceRoute,
   AppCalendarRoute: AppCalendarRoute,
   AppClassesRoute: AppClassesRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppMaterialsRoute: AppMaterialsRoute,
   AppMeetingsRoute: AppMeetingsRoute,
+  AppMyClassRoute: AppMyClassRoute,
   AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
   AppReportsRoute: AppReportsRoute,
@@ -590,6 +652,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppSubjectsRoute: AppSubjectsRoute,
   AppTeachersRoute: AppTeachersRoute,
   AppTimetableRoute: AppTimetableRoute,
+  AppUsersRoute: AppUsersRoute,
   AppAssignmentsIdRoute: AppAssignmentsIdRoute,
   AppForumIdRoute: AppForumIdRoute,
   AppQuizzesIdRoute: AppQuizzesIdRoute,

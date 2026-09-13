@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
-import { requireActor } from "./actor";
+import { listInchargeSections, listTeachingAssignments, requireActor } from "./actor";
 import { num } from "./format";
 
 export const getDashboard = createServerFn({ method: "GET" })
@@ -81,6 +81,8 @@ export const getDashboard = createServerFn({ method: "GET" })
     let myPending: number | null = null;
     let teacherPending = pendingGrade.n;
     let mySubjects: { name: string; teacher: string | null }[] = [];
+    let teaching: Awaited<ReturnType<typeof listTeachingAssignments>> = [];
+    let incharge: Awaited<ReturnType<typeof listInchargeSections>> = [];
 
     if (actor.studentId) {
       const att = await sql<{ status: string; n: number }>`
@@ -137,6 +139,8 @@ export const getDashboard = createServerFn({ method: "GET" })
         where sub.status = 'submitted' and a.teacher_id = ${actor.teacherId}
       `;
       teacherPending = tp.n;
+      teaching = await listTeachingAssignments(sql, actor.teacherId);
+      incharge = await listInchargeSections(sql, actor.teacherId);
     }
 
     const attendanceTrend = await sql<{ day: string; present: number; total: number }>`
@@ -169,5 +173,7 @@ export const getDashboard = createServerFn({ method: "GET" })
       myGpa,
       myPending,
       mySubjects,
+      teaching,
+      incharge,
     };
   });
