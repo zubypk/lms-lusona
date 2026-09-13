@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="AEC LMS">
+  <rect width="32" height="32" rx="7" fill="#12385A"/>
+  <g fill="none" stroke="#F3F5F8" stroke-width="1.7" stroke-linecap="round">
+    <ellipse cx="16" cy="16" rx="8.2" ry="3.05"/>
+    <ellipse cx="16" cy="16" rx="8.2" ry="3.05" transform="rotate(60 16 16)"/>
+    <ellipse cx="16" cy="16" rx="8.2" ry="3.05" transform="rotate(120 16 16)"/>
+  </g>
+  <circle cx="16" cy="16" r="2.2" fill="#F3F5F8"/>
+</svg>
