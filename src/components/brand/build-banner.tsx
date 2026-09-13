@@ -1,13 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BUILD, SEEN_BUILD_KEY } from "@/lib/build";
-import { getPublicCampus } from "@/lib/lms/public";
 
 export function BuildBanner() {
-  const campus = useQuery({ queryKey: ["public-campus"], queryFn: () => getPublicCampus() });
-  const message = campus.data?.build_message || BUILD.message;
-  const token = `${BUILD.number}::${message}`;
+  const token = `${BUILD.number}::${BUILD.message}`;
   const [open, setOpen] = useState(true);
 
   useEffect(() => {
@@ -36,7 +32,7 @@ export function BuildBanner() {
           <div className="text-[10px] font-medium tracking-[0.16em] text-primary uppercase">
             New build {BUILD.number} · {BUILD.title}
           </div>
-          <p className="mt-0.5 text-sm text-ink-soft">{message}</p>
+          <p className="mt-0.5 text-sm text-ink-soft">{BUILD.message}</p>
         </div>
         <button
           type="button"

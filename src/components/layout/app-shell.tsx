@@ -23,7 +23,6 @@ import {
   UserCog,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { UserButton } from "@/lib/auth/gates";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
 import type { Actor, Role } from "@/lib/lms/types";
@@ -34,7 +33,7 @@ import { AppearanceControls } from "@/components/appearance/controls";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { getPublicCampus } from "@/lib/lms/public";
+import { CAMPUS_DOMAIN } from "@/lib/build";
 import { cn } from "@/lib/utils";
 
 type Item = { to: string; label: string; icon: typeof LayoutDashboard; roles?: Role[] };
@@ -88,6 +87,9 @@ const NAV: { title: string; items: Item[] }[] = [
   },
 ];
 
+const MARQUEE =
+  "AEC LMS · Session 2025–26 · lms.lusona.org · College mail @lms.edu.pk · Mid-term week begins 22 September";
+
 function visible(item: Item, role: Role) {
   if (!item.roles) return true;
   if (role === "super_admin") return true;
@@ -136,7 +138,6 @@ function NavBody({ actor, onNavigate }: { actor: Actor; onNavigate?: () => void 
 export function AppShell({ actor }: { actor: Actor }) {
   const [open, setOpen] = useState(false);
   const user = useCurrentUser();
-  const campus = useQuery({ queryKey: ["public-campus"], queryFn: () => getPublicCampus() });
   const name = actor.displayName || user?.displayName || "Campus member";
   const subtitle = useMemo(() => {
     if (actor.role === "student" && actor.className) {
@@ -156,12 +157,12 @@ export function AppShell({ actor }: { actor: Actor }) {
         <NavBody actor={actor} />
         <div className="border-t border-white/10 p-4">
           <div className="text-[10px] tracking-[0.14em] text-white/40 uppercase">Session 2025–26</div>
-          <div className="mt-1 text-xs text-white/70">{campus.data?.domain ?? "lms.lusona.org"}</div>
+          <div className="mt-1 text-xs text-white/70">{CAMPUS_DOMAIN}</div>
         </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <CampusMarquee compact text={campus.data?.marquee ?? "AEC LMS · Session 2025–26 · lms.lusona.org"} />
+        <CampusMarquee compact text={MARQUEE} />
         <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-surface/90 px-4 backdrop-blur-sm">
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(true)} aria-label="Open menu">
             <Menu className="h-5 w-5" />
