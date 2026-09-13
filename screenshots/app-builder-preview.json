@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "AEC Learning Management System",
+      "hasCanvas": false,
+      "bodyTextLen": 1388,
+      "bodyTextHash": "57c714581ac859459cae1bf13b01dd4f182ee9a0c677afe0e07f9fe222d428bf",
+      "bodyTextPrefix": "AEC College LEARNING SYSTEM Academic session 2025–26 · FBISE Ato",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "AEC Learning Management System",
+      "hasCanvas": false,
+      "bodyTextLen": 1410,
+      "bodyTextHash": "d13a48d23459b29b1adeab43799111f805e29551c6ca7435ba36e582005f669b",
+      "bodyTextPrefix": "AEC College LEARNING SYSTEM Sign in Academic session 2025–26 · F",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

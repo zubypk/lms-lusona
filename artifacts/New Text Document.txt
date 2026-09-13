@@ -1,0 +1,19 @@
+*LMS Portal* = *Learning Management System Portal*
+
+It’s basically an online website/app where students and teachers manage all school/college/course work in one place.
+
+### *What you can do on an LMS Portal:*
+1. *Classes & Courses* - See your subjects, syllabus, and timetable
+2. *Study Material* - Download notes, PDFs, videos, online classes,  presentations uploaded by teachers
+3. *Assignments & Tests* - Submit homework, quizzes, and get grades
+4. *Attendance* - Check your class attendance record incase of online classes
+5. *Announcements* - Get notices, exam dates, and updates from teachers/admin
+6. *Discussion/Chat* - Ask questions and talk with teachers
+7. *Results* - View marksheets and progress reports
+
+### *Examples of LMS Portals:*
+- *Google Classroom*
+- *Moodle*
+- *Canvas*
+- *Blackboard*
+- University/School specific ones like _VU LMS_, _LMS NUML_, _LMS COMSATS_, etc.

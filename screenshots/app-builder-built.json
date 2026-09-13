@@ -1,0 +1,40 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "AEC Learning Management System",
+      "hasCanvas": false,
+      "bodyTextLen": 1410,
+      "bodyTextHash": "d13a48d23459b29b1adeab43799111f805e29551c6ca7435ba36e582005f669b",
+      "bodyTextPrefix": "AEC College LEARNING SYSTEM Sign in Academic session 2025–26 · F",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "AEC Learning Management System",
+      "hasCanvas": false,
+      "bodyTextLen": 1410,
+      "bodyTextHash": "d13a48d23459b29b1adeab43799111f805e29551c6ca7435ba36e582005f669b",
+      "bodyTextPrefix": "AEC College LEARNING SYSTEM Sign in Academic session 2025–26 · F",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-built.json",
+  "divergesFromBaseline": true,
+  "baselineReasons": [
+    "desktop: body text replaced (similar length, page start changed)"
+  ]
+}
