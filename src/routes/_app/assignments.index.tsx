@@ -88,8 +88,8 @@ function AssignmentForm({
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [subjectId, setSubjectId] = useState("1");
-  const [classId, setClassId] = useState("3");
+  const [subjectId, setSubjectId] = useState("");
+  const [classId, setClassId] = useState("");
   const [dueAt, setDueAt] = useState("2026-09-30T16:00");
   const [maxMarks, setMaxMarks] = useState("50");
   const mut = useMutation({
@@ -98,8 +98,8 @@ function AssignmentForm({
         data: {
           title,
           description,
-          subjectId: Number(subjectId),
-          classId: Number(classId),
+          subjectId: Number(subjectId || lookups?.subjects[0]?.id),
+          classId: Number(classId || lookups?.classes[0]?.id),
           dueAt: new Date(dueAt).toISOString(),
           maxMarks: Number(maxMarks),
         },
@@ -125,7 +125,7 @@ function AssignmentForm({
         <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
       </Field>
       <Field label="Subject">
-        <Select value={subjectId} onValueChange={setSubjectId}>
+        <Select value={subjectId || String(lookups?.subjects[0]?.id ?? "")} onValueChange={setSubjectId}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -139,7 +139,7 @@ function AssignmentForm({
         </Select>
       </Field>
       <Field label="Class">
-        <Select value={classId} onValueChange={setClassId}>
+        <Select value={classId || String(lookups?.classes[0]?.id ?? "")} onValueChange={setClassId}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

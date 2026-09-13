@@ -2,7 +2,23 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
-import { assertRole, audit, requireActor, teacherSectionIds } from "./actor";
+import {
+  makeStudentEmail,
+  makeStudentPassword,
+  makeStudentUsername,
+  provisionEmailLogin,
+  rotateEmailPassword,
+} from "./accounts";
+import {
+  assertRole,
+  assertSectionAccess,
+  audit,
+  listInchargeSections,
+  listTeachingAssignments,
+  requireActor,
+  teacherSectionIds,
+} from "./actor";
+import type { IssuedLogin } from "./types";
 
 export const listStudents = createServerFn({ method: "GET" })
   .validator(z.object({ q: z.string().optional(), sectionId: z.number().optional() }).optional())
@@ -18,41 +34,37 @@ export const listStudents = createServerFn({ method: "GET" })
       return sql<StudentRow>`
         select st.id, st.student_code, st.roll_number, st.registration_number, st.name, st.father_name,
                st.mobile, st.email, st.username, st.class_id, st.section_id, c.name as class_name,
-               sec.name as section_name, st.session_id
+               sec.name as section_name, st.session_id, (st.user_id is not null) as has_login
         from students st
         join classes c on c.id = st.class_id
         join sections sec on sec.id = st.section_id
         where st.id = ${actor.studentId}
       `;
     }
-    if (actor.role === "teacher" && actor.teacherId) {
+    if ((actor.role === "teacher" || actor.role === "class_incharge") && actor.teacherId) {
       const ids = await teacherSectionIds(sql, actor.teacherId);
       if (!ids.length) return [];
+      if (sectionFilter && !ids.includes(sectionFilter)) sectionFilter = null;
       const rows = await sql.query<StudentRow>(
         `select st.id, st.student_code, st.roll_number, st.registration_number, st.name, st.father_name,
                 st.mobile, st.email, st.username, st.class_id, st.section_id, c.name as class_name,
-                sec.name as section_name, st.session_id
+                sec.name as section_name, st.session_id, (st.user_id is not null) as has_login
          from students st
          join classes c on c.id = st.class_id
          join sections sec on sec.id = st.section_id
          where st.section_id = any($1)
-           and ($2 = '' or lower(st.name) like $3 or lower(st.student_code) like $3 or lower(st.roll_number) like $3)
+           and ($2::int is null or st.section_id = $2)
+           and ($3 = '' or lower(st.name) like $4 or lower(st.student_code) like $4 or lower(st.roll_number) like $4)
          order by st.roll_number`,
-        [ids, q, like],
+        [ids, sectionFilter, q, like],
       );
       return rows;
-    }
-    if (actor.role === "class_incharge" && actor.teacherId && !sectionFilter) {
-      const inc = await sql<{ id: number }>`
-        select id from sections where incharge_teacher_id = ${actor.teacherId}
-      `;
-      sectionFilter = inc[0]?.id ?? sectionFilter;
     }
 
     return sql<StudentRow>`
       select st.id, st.student_code, st.roll_number, st.registration_number, st.name, st.father_name,
              st.mobile, st.email, st.username, st.class_id, st.section_id, c.name as class_name,
-             sec.name as section_name, st.session_id
+             sec.name as section_name, st.session_id, (st.user_id is not null) as has_login
       from students st
       join classes c on c.id = st.class_id
       join sections sec on sec.id = st.section_id
@@ -77,44 +89,189 @@ type StudentRow = {
   class_name: string;
   section_name: string;
   session_id: number;
+  has_login: boolean;
 };
+
+async function uniqueUsername(sql: Awaited<ReturnType<typeof getSql>>, seed: string) {
+  let username = seed;
+  let n = 0;
+  for (;;) {
+    const hit = await sql<{ id: number }>`select id from students where username = ${username} limit 1`;
+    if (!hit[0]) return username;
+    n += 1;
+    username = `${seed}${n}`;
+  }
+}
 
 export const saveStudent = createServerFn({ method: "POST" })
   .validator(
     z.object({
       name: z.string().min(2),
       fatherName: z.string().min(2),
-      classId: z.number(),
-      sectionId: z.number(),
-      sessionId: z.number(),
-      mobile: z.string().optional(),
-      email: z.string().optional(),
-      rollNumber: z.string().optional(),
+      rollNumber: z.string().min(1),
+      classId: z.number().optional(),
+      sectionId: z.number().optional(),
+      sessionId: z.number().optional(),
     }),
   )
   .middleware([authMiddleware])
-  .handler(async ({ context, data }) => {
+  .handler(async ({ context, data }): Promise<IssuedLogin> => {
     const sql = await getSql();
     const actor = await requireActor(context.userId, sql);
     assertRole(actor, ["super_admin", "academic_admin", "class_incharge"]);
+
+    let classId = data.classId ?? actor.classId;
+    let sectionId = data.sectionId ?? actor.sectionId;
+    let sessionId = data.sessionId;
+
+    if (actor.role === "class_incharge") {
+      if (!actor.teacherId) throw new Error("You are not assigned as a class teacher.");
+      const mine = await listInchargeSections(sql, actor.teacherId);
+      if (!mine.length) throw new Error("You are not the class teacher of any section.");
+      const chosen = sectionId ? mine.find((s) => s.section_id === sectionId) : mine[0];
+      if (!chosen) throw new Error("You can only enrol students in your own class.");
+      classId = chosen.class_id;
+      sectionId = chosen.section_id;
+    }
+
+    if (!classId || !sectionId) throw new Error("Choose a class and section.");
+    await assertSectionAccess(sql, actor, sectionId);
+
+    if (!sessionId) {
+      const [cur] = await sql<{ id: number }>`
+        select id from academic_sessions where is_current = true order by id desc limit 1
+      `;
+      sessionId = cur?.id ?? 1;
+    }
+
+    const roll = data.rollNumber.trim();
+    const dup = await sql<{ id: number }>`
+      select id from students
+      where section_id = ${sectionId} and lower(roll_number) = ${roll.toLowerCase()}
+      limit 1
+    `;
+    if (dup[0]) throw new Error("That roll number is already in this class.");
+
     const [n] = await sql<{ n: number }>`select count(*)::int as n from students`;
     const seq = n.n + 1;
     const code = `AEC-2025-${String(seq).padStart(3, "0")}`;
-    const roll = data.rollNumber || `R-${seq}`;
-    const username = (data.name.toLowerCase().replace(/[^a-z]/g, "").slice(0, 8) || "student") + seq;
-    const tempPassword = `Aec@${Math.floor(100000 + Math.random() * 900000)}`;
+    const username = await uniqueUsername(sql, makeStudentUsername(data.name, roll, seq));
+    const email = makeStudentEmail(username);
+    const tempPassword = makeStudentPassword();
+    const userId = await provisionEmailLogin(sql, {
+      name: data.name.trim(),
+      email,
+      password: tempPassword,
+    });
+
     const rows = await sql<{ id: number }>`
       insert into students (
         student_code, roll_number, registration_number, name, father_name,
-        class_id, section_id, session_id, mobile, email, username
+        class_id, section_id, session_id, email, username, user_id,
+        login_issued_at, login_issued_by
       ) values (
-        ${code}, ${roll}, ${"FBISE-RWP-2025-" + (44000 + seq)}, ${data.name}, ${data.fatherName},
-        ${data.classId}, ${data.sectionId}, ${data.sessionId}, ${data.mobile ?? null},
-        ${data.email ?? null}, ${username}
+        ${code}, ${roll}, ${"FBISE-RWP-2025-" + (44000 + seq)}, ${data.name.trim()}, ${data.fatherName.trim()},
+        ${classId}, ${sectionId}, ${sessionId}, ${email}, ${username}, ${userId},
+        now(), ${context.userId}
       ) returning id
     `;
-    await audit(sql, context.userId, "create_student", "student", rows[0]?.id, data.name);
-    return { id: rows[0]?.id, username, studentCode: code, tempPassword };
+    const studentId = rows[0]?.id;
+    if (!studentId) throw new Error("Could not save the student.");
+
+    await sql`
+      insert into profiles (user_id, role, display_name, email, student_id, updated_at)
+      values (${userId}, 'student', ${data.name.trim()}, ${email}, ${studentId}, now())
+      on conflict (user_id) do update set
+        role = 'student',
+        display_name = excluded.display_name,
+        email = excluded.email,
+        student_id = excluded.student_id,
+        updated_at = now()
+    `;
+    await audit(sql, context.userId, "create_student", "student", studentId, data.name);
+    return {
+      id: studentId,
+      username,
+      email,
+      tempPassword,
+      studentCode: code,
+      rollNumber: roll,
+      name: data.name.trim(),
+    };
+  });
+
+export const resetStudentLogin = createServerFn({ method: "POST" })
+  .validator(z.object({ studentId: z.number() }))
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }): Promise<IssuedLogin> => {
+    const sql = await getSql();
+    const actor = await requireActor(context.userId, sql);
+    assertRole(actor, ["super_admin", "academic_admin", "class_incharge"]);
+    const [st] = await sql<{
+      id: number;
+      name: string;
+      username: string;
+      email: string | null;
+      user_id: string | null;
+      student_code: string;
+      roll_number: string;
+      section_id: number;
+    }>`
+      select id, name, username, email, user_id, student_code, roll_number, section_id
+      from students where id = ${data.studentId}
+    `;
+    if (!st) throw new Error("Student not found.");
+    await assertSectionAccess(sql, actor, st.section_id);
+    if (actor.role === "class_incharge" && actor.teacherId) {
+      const mine = await listInchargeSections(sql, actor.teacherId);
+      if (!mine.some((s) => s.section_id === st.section_id)) {
+        throw new Error("You can only reset logins for students in your own class.");
+      }
+    }
+    const tempPassword = makeStudentPassword();
+    const email = st.email || makeStudentEmail(st.username);
+    let userId = st.user_id;
+    if (!userId) {
+      userId = await provisionEmailLogin(sql, { name: st.name, email, password: tempPassword });
+      await sql`
+        update students
+        set user_id = ${userId}, email = ${email}, login_issued_at = now(), login_issued_by = ${context.userId}
+        where id = ${st.id}
+      `;
+      await sql`
+        insert into profiles (user_id, role, display_name, email, student_id, updated_at)
+        values (${userId}, 'student', ${st.name}, ${email}, ${st.id}, now())
+        on conflict (user_id) do update set
+          role = 'student', student_id = excluded.student_id, updated_at = now()
+      `;
+    } else {
+      await rotateEmailPassword(sql, userId, tempPassword);
+      await sql`
+        update students
+        set login_issued_at = now(), login_issued_by = ${context.userId}, email = ${email}
+        where id = ${st.id}
+      `;
+    }
+    await audit(sql, context.userId, "reset_student_login", "student", st.id, st.name);
+    return {
+      id: st.id,
+      username: st.username,
+      email,
+      tempPassword,
+      studentCode: st.student_code,
+      rollNumber: st.roll_number,
+      name: st.name,
+    };
+  });
+
+export const getTeacherDesk = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const sql = await getSql();
+    const actor = await requireActor(context.userId, sql);
+    const teaching = actor.teacherId ? await listTeachingAssignments(sql, actor.teacherId) : [];
+    const incharge = actor.teacherId ? await listInchargeSections(sql, actor.teacherId) : [];
+    return { actor, teaching, incharge, canEnroll: incharge.length > 0 || actor.role === "super_admin" || actor.role === "academic_admin" };
   });
 
 export const listTeachers = createServerFn({ method: "GET" })

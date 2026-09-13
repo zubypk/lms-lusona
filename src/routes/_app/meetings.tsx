@@ -84,7 +84,8 @@ function MeetingForm({
   const [platform, setPlatform] = useState<"meet" | "zoom" | "teams">("meet");
   const [url, setUrl] = useState("https://meet.google.com/");
   const [startsAt, setStartsAt] = useState("2026-09-18T09:30");
-  const [subjectId, setSubjectId] = useState("1");
+  const [subjectId, setSubjectId] = useState("");
+  const [sectionId, setSectionId] = useState("");
   const mut = useMutation({
     mutationFn: () =>
       saveMeeting({
@@ -93,8 +94,8 @@ function MeetingForm({
           platform,
           url,
           startsAt: new Date(startsAt).toISOString(),
-          subjectId: Number(subjectId),
-          sectionId: 5,
+          subjectId: Number(subjectId || lookups?.subjects[0]?.id),
+          sectionId: Number(sectionId || lookups?.sections[0]?.id),
         },
       }),
     onSuccess: () => {
@@ -133,7 +134,7 @@ function MeetingForm({
         <Input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
       </Field>
       <Field label="Subject">
-        <Select value={subjectId} onValueChange={setSubjectId}>
+        <Select value={subjectId || String(lookups?.subjects[0]?.id ?? "")} onValueChange={setSubjectId}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -141,6 +142,20 @@ function MeetingForm({
             {lookups?.subjects.map((s) => (
               <SelectItem key={s.id} value={String(s.id)}>
                 {s.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field label="Class / section">
+        <Select value={sectionId || String(lookups?.sections[0]?.id ?? "")} onValueChange={setSectionId}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {lookups?.sections.map((s) => (
+              <SelectItem key={s.id} value={String(s.id)}>
+                {lookups.classes.find((c) => c.id === s.class_id)?.name ?? "Class"} · {s.name}
               </SelectItem>
             ))}
           </SelectContent>

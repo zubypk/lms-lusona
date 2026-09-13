@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
-import { assertRole, notify, requireActor } from "./actor";
+import { assertRole, assertSectionAccess, notify, requireActor, teacherSectionIds } from "./actor";
+
 import { letterAndGpa, num } from "./format";
 
 export const getAttendance = createServerFn({ method: "GET" })
@@ -11,7 +12,12 @@ export const getAttendance = createServerFn({ method: "GET" })
   .handler(async ({ context, data }) => {
     const sql = await getSql();
     const actor = await requireActor(context.userId, sql);
-    const sectionId = data?.sectionId ?? actor.sectionId ?? 5;
+    const mine = actor.teacherId ? await teacherSectionIds(sql, actor.teacherId) : [];
+    const fallback = actor.sectionId ?? mine[0] ?? 5;
+    const sectionId = data?.sectionId ?? fallback;
+    if (actor.role === "teacher" || actor.role === "class_incharge") {
+      await assertSectionAccess(sql, actor, sectionId);
+    }
     const from = data?.from ?? "2026-08-01";
     const to = data?.to ?? "2026-12-31";
 
@@ -41,12 +47,21 @@ export const getAttendance = createServerFn({ method: "GET" })
       }
       return { ...s, present, total, pct: total ? Math.round((present / total) * 100) : 0 };
     });
-    const sections = await sql<{ id: number; label: string }>`
-      select sec.id, (c.name || ' · ' || sec.name) as label
-      from sections sec join classes c on c.id = sec.class_id
-      order by c.grade_level, sec.name
-    `;
-    return { sectionId, students, days, map, summary, sections };
+    const sectionList =
+      actor.role === "teacher" || actor.role === "class_incharge"
+        ? await sql.query<{ id: number; label: string }>(
+            `select sec.id, (c.name || ' · ' || sec.name) as label
+             from sections sec join classes c on c.id = sec.class_id
+             where sec.id = any($1)
+             order by c.grade_level, sec.name`,
+            [mine.length ? mine : [sectionId]],
+          )
+        : await sql<{ id: number; label: string }>`
+            select sec.id, (c.name || ' · ' || sec.name) as label
+            from sections sec join classes c on c.id = sec.class_id
+            order by c.grade_level, sec.name
+          `;
+    return { sectionId, students, days, map, summary, sections: sectionList };
   });
 
 export const markAttendance = createServerFn({ method: "POST" })
@@ -63,6 +78,7 @@ export const markAttendance = createServerFn({ method: "POST" })
     const sql = await getSql();
     const actor = await requireActor(context.userId, sql);
     assertRole(actor, ["teacher", "class_incharge", "academic_admin", "super_admin"]);
+    await assertSectionAccess(sql, actor, data.sectionId);
     for (const m of data.marks) {
       await sql`
         delete from attendance
@@ -286,11 +302,36 @@ export const listLookups = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const sql = await getSql();
-    await requireActor(context.userId, sql);
-    const classes = await sql<{ id: number; name: string }>`select id, name from classes order by grade_level`;
-    const sections = await sql<{ id: number; class_id: number; name: string }>`select id, class_id, name from sections order by name`;
-    const subjects = await sql<{ id: number; name: string }>`select id, name from subjects order by name`;
+    const actor = await requireActor(context.userId, sql);
+    const scoped = (actor.role === "teacher" || actor.role === "class_incharge") && actor.teacherId;
+    const sectionIds = scoped && actor.teacherId ? await teacherSectionIds(sql, actor.teacherId) : [];
+    const ids = sectionIds.length ? sectionIds : [0];
+    const classes = scoped
+      ? await sql.query<{ id: number; name: string }>(
+          `select distinct c.id, c.name
+           from classes c
+           join sections sec on sec.class_id = c.id
+           where sec.id = any($1)
+           order by c.grade_level`,
+          [ids],
+        )
+      : await sql<{ id: number; name: string }>`select id, name from classes order by grade_level`;
+    const sections = scoped
+      ? await sql.query<{ id: number; class_id: number; name: string }>(
+          `select id, class_id, name from sections where id = any($1) order by name`,
+          [ids],
+        )
+      : await sql<{ id: number; class_id: number; name: string }>`select id, class_id, name from sections order by name`;
+    const subjects = scoped && actor.teacherId
+      ? await sql<{ id: number; name: string }>`
+          select distinct sub.id, sub.name
+          from class_subjects cs
+          join subjects sub on sub.id = cs.subject_id
+          where cs.teacher_id = ${actor.teacherId}
+          order by sub.name
+        `
+      : await sql<{ id: number; name: string }>`select id, name from subjects order by name`;
     const teachers = await sql<{ id: number; name: string }>`select id, name from teachers order by name`;
     const sessions = await sql<{ id: number; name: string }>`select id, name from academic_sessions order by starts_on desc`;
-    return { classes, sections, subjects, teachers, sessions };
+    return { classes, sections, subjects, teachers, sessions, scoped: Boolean(scoped) };
   });

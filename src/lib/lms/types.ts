@@ -19,12 +19,12 @@ export const ROLES: { id: Role; label: string; blurb: string }[] = [
   {
     id: "class_incharge",
     label: "Class Incharge",
-    blurb: "One section: roster, timetable, attendance and student progress.",
+    blurb: "Your class: enrol with name, father name and roll no. Login is issued automatically.",
   },
   {
     id: "teacher",
-    label: "Teacher",
-    blurb: "Assigned classes — materials, assignments, quizzes and marking.",
+    label: "Subject Teacher",
+    blurb: "Only your assigned classes — materials, quizzes, assignments and live sessions.",
   },
   {
     id: "student",
@@ -47,12 +47,36 @@ export type Actor = {
   sectionName: string | null;
 };
 
+export type TeachingAssignment = {
+  class_id: number;
+  section_id: number | null;
+  subject_id: number;
+  class_name: string;
+  section_name: string | null;
+  subject_name: string;
+  is_incharge: boolean;
+};
+
+export type IssuedLogin = {
+  id: number;
+  username: string;
+  email: string;
+  tempPassword: string;
+  studentCode: string;
+  rollNumber: string;
+  name: string;
+};
+
 export function isStaff(role: Role) {
   return role !== "student";
 }
 
 export function canManagePeople(role: Role) {
   return role === "super_admin" || role === "academic_admin" || role === "class_incharge";
+}
+
+export function canEnrollStudents(role: Role) {
+  return canManagePeople(role);
 }
 
 export function canTeach(role: Role) {

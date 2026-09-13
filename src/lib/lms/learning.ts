@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
-import { assertRole, audit, notify, requireActor } from "./actor";
+import { assertRole, audit, notify, requireActor, teacherClassIds, teacherSectionIds } from "./actor";
 
 export const listMaterials = createServerFn({ method: "GET" })
   .validator(z.object({ q: z.string().optional() }).optional())
@@ -31,9 +31,15 @@ export const listMaterials = createServerFn({ method: "GET" })
       left join teachers t on t.id = m.teacher_id
       where (${q} = '' or lower(m.title) like ${like} or lower(m.description) like ${like} or lower(sub.name) like ${like})
         and (
-          ${actor.role} <> 'student'
-          or m.class_id is null
-          or m.class_id = ${actor.classId}
+          ${actor.role} = 'super_admin' or ${actor.role} = 'academic_admin'
+          or (${actor.role} = 'student' and (m.class_id is null or m.class_id = ${actor.classId}))
+          or (
+            ${actor.teacherId} is not null
+            and (m.teacher_id = ${actor.teacherId} or m.class_id is null or m.class_id in (
+              select cs.class_id from class_subjects cs where cs.teacher_id = ${actor.teacherId}
+              union select sec.class_id from sections sec where sec.incharge_teacher_id = ${actor.teacherId}
+            ))
+          )
         )
       order by m.created_at desc
     `;
@@ -56,6 +62,10 @@ export const saveMaterial = createServerFn({ method: "POST" })
     const sql = await getSql();
     const actor = await requireActor(context.userId, sql);
     assertRole(actor, ["teacher", "class_incharge", "academic_admin", "super_admin"]);
+    if (data.classId && actor.teacherId && actor.role !== "super_admin" && actor.role !== "academic_admin") {
+      const classes = await teacherClassIds(sql, actor.teacherId);
+      if (!classes.includes(data.classId)) throw new Error("You can only upload to your assigned classes.");
+    }
     await sql`
       insert into materials (title, description, type, url, subject_id, class_id, section_id, teacher_id, uploaded_by)
       values (
@@ -96,7 +106,14 @@ export const listAssignments = createServerFn({ method: "GET" })
       left join teachers t on t.id = a.teacher_id
       where a.published = true
         and (${actor.role} <> 'student' or (a.class_id = ${actor.classId} and (a.section_id is null or a.section_id = ${actor.sectionId})))
-        and (${actor.role} <> 'teacher' or a.teacher_id = ${actor.teacherId} or ${actor.role} = 'class_incharge')
+        and (
+          ${actor.role} not in ('teacher', 'class_incharge')
+          or a.teacher_id = ${actor.teacherId}
+          or a.class_id in (
+            select cs.class_id from class_subjects cs where cs.teacher_id = ${actor.teacherId}
+            union select sec.class_id from sections sec where sec.incharge_teacher_id = ${actor.teacherId}
+          )
+        )
       order by a.due_at
     `;
     return rows;
@@ -170,6 +187,10 @@ export const saveAssignment = createServerFn({ method: "POST" })
     const sql = await getSql();
     const actor = await requireActor(context.userId, sql);
     assertRole(actor, ["teacher", "class_incharge", "academic_admin", "super_admin"]);
+    if (data.classId && actor.teacherId && actor.role !== "super_admin" && actor.role !== "academic_admin") {
+      const classes = await teacherClassIds(sql, actor.teacherId);
+      if (!classes.includes(data.classId)) throw new Error("You can only publish to your assigned classes.");
+    }
     const rows = await sql<{ id: number }>`
       insert into assignments (
         title, description, subject_id, class_id, section_id, teacher_id, due_at, max_marks, attachment_url, created_by
@@ -256,6 +277,14 @@ export const listQuizzes = createServerFn({ method: "GET" })
       join classes c on c.id = q.class_id
       where q.published = true
         and (${actor.role} <> 'student' or (q.class_id = ${actor.classId} and (q.section_id is null or q.section_id = ${actor.sectionId})))
+        and (
+          ${actor.role} not in ('teacher', 'class_incharge')
+          or q.teacher_id = ${actor.teacherId}
+          or q.class_id in (
+            select cs.class_id from class_subjects cs where cs.teacher_id = ${actor.teacherId}
+            union select sec.class_id from sections sec where sec.incharge_teacher_id = ${actor.teacherId}
+          )
+        )
       order by q.created_at desc
     `;
   });
@@ -420,6 +449,10 @@ export const saveQuiz = createServerFn({ method: "POST" })
     const sql = await getSql();
     const actor = await requireActor(context.userId, sql);
     assertRole(actor, ["teacher", "class_incharge", "academic_admin", "super_admin"]);
+    if (actor.teacherId && actor.role !== "super_admin" && actor.role !== "academic_admin") {
+      const classes = await teacherClassIds(sql, actor.teacherId);
+      if (!classes.includes(data.classId)) throw new Error("You can only set quizzes for your assigned classes.");
+    }
     const [quiz] = await sql<{ id: number }>`
       insert into quizzes (title, description, subject_id, class_id, teacher_id, duration_minutes, max_attempts, created_by)
       values (
@@ -451,7 +484,7 @@ export const listMeetings = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const sql = await getSql();
-    await requireActor(context.userId, sql);
+    const actor = await requireActor(context.userId, sql);
     return sql<{
       id: number;
       title: string;
@@ -467,6 +500,21 @@ export const listMeetings = createServerFn({ method: "GET" })
       from meetings m
       left join subjects sub on sub.id = m.subject_id
       left join teachers t on t.id = m.teacher_id
+      where (
+        ${actor.role} = 'super_admin' or ${actor.role} = 'academic_admin'
+        or (${actor.role} = 'student' and (m.section_id is null or m.section_id = ${actor.sectionId}))
+        or (
+          ${actor.teacherId} is not null
+          and (
+            m.teacher_id = ${actor.teacherId}
+            or m.section_id in (
+              select cs.section_id from class_subjects cs where cs.teacher_id = ${actor.teacherId} and cs.section_id is not null
+              union select sec.id from sections sec where sec.incharge_teacher_id = ${actor.teacherId}
+            )
+            or m.section_id is null
+          )
+        )
+      )
       order by m.starts_at desc
     `;
   });
@@ -488,6 +536,10 @@ export const saveMeeting = createServerFn({ method: "POST" })
     const sql = await getSql();
     const actor = await requireActor(context.userId, sql);
     assertRole(actor, ["teacher", "class_incharge", "academic_admin", "super_admin"]);
+    if (data.sectionId && actor.teacherId && actor.role !== "super_admin" && actor.role !== "academic_admin") {
+      const ids = await teacherSectionIds(sql, actor.teacherId);
+      if (!ids.includes(data.sectionId)) throw new Error("You can only schedule live classes for your assigned sections.");
+    }
     await sql`
       insert into meetings (title, platform, url, subject_id, section_id, teacher_id, starts_at, ends_at, created_by)
       values (

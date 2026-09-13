@@ -7,10 +7,15 @@ import {
   Shield,
   Video,
 } from "lucide-react";
-import { Crest, Wordmark } from "@/components/brand/crest";
+import { useEffect, useState } from "react";
+import { AppearanceControls } from "@/components/appearance/controls";
+import { CampusMarquee } from "@/components/brand/marquee";
+import { HeroSlider } from "@/components/brand/hero-slider";
+import { Wordmark } from "@/components/brand/crest";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut } from "@/lib/auth/gates";
-import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { BUILD } from "@/lib/build";
 
 export const Route = createFileRoute("/")({ component: Home });
 
@@ -43,105 +48,116 @@ const FEATURES = [
   {
     icon: Shield,
     title: "Campus accounts",
-    body: "Signed-in access with Google, X, or college email. Activity is logged.",
+    body: "Class teachers enrol with name, father name and roll no. Student login is issued automatically.",
   },
 ];
 
+const MARQUEE =
+  "Welcome to LMS · Class teachers enrol with Name, Father name and Roll no · Student login issued automatically · Subject teachers see only their classes";
+
 function Home() {
-  const { isPending } = useCurrentUserState();
+  const [live, setLive] = useState(false);
+  useEffect(() => setLive(true), []);
+
+  const authSlot = !live ? (
+    <div className="h-11 w-24 rounded-md bg-paper-2" aria-hidden />
+  ) : (
+    <>
+      <SignedOut>
+        <Button asChild variant="outline" className="h-11 px-3 sm:px-4">
+          <Link to="/login">Sign in</Link>
+        </Button>
+      </SignedOut>
+      <SignedIn>
+        <Button asChild className="h-11 px-3 sm:px-4">
+          <Link to="/dashboard">Open LMS</Link>
+        </Button>
+      </SignedIn>
+    </>
+  );
 
   return (
-    <div className="min-h-dvh bg-paper">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
-        <Wordmark />
-        <div className="flex items-center gap-2">
-          {isPending ? <div className="h-10 w-24 animate-pulse rounded-md bg-paper-2" /> : null}
-          <SignedOut>
-            <Button asChild variant="outline">
-              <Link to="/login">Sign in</Link>
-            </Button>
-          </SignedOut>
-          <SignedIn>
-            <Button asChild>
-              <Link to="/dashboard">Open campus</Link>
-            </Button>
-          </SignedIn>
+    <div className="min-h-dvh">
+      <CampusMarquee text={MARQUEE} />
+
+      <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-5 sm:py-4">
+        <Wordmark compact />
+        <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          <AppearanceControls />
+          {authSlot}
         </div>
       </header>
 
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,color-mix(in_oklab,var(--color-accent)_16%,transparent),transparent_55%)]" />
-        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:py-16">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs font-medium text-muted">
-              <span className="h-1.5 w-1.5 rounded-full bg-ok" />
-              Academic session 2025–26 · FBISE
-            </div>
-            <h1 className="mt-5 font-display text-4xl leading-[1.12] font-semibold tracking-tight text-navy sm:text-5xl">
-              Atomic Energy Commission College
-            </h1>
-            <p className="mt-4 max-w-xl text-base text-ink-soft sm:text-lg">
-              The campus learning system for students, teachers and academic staff in Rawalpindi
-              and Islamabad. Timetables, laboratories, assessments and results — in one place.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <SignedOut>
-                <Button asChild size="lg">
-                  <Link to="/login">Enter the LMS</Link>
-                </Button>
-              </SignedOut>
-              <SignedIn>
-                <Button asChild size="lg">
-                  <Link to="/dashboard">Go to dashboard</Link>
-                </Button>
-              </SignedIn>
-              <Button asChild size="lg" variant="outline">
-                <a href="#modules">Browse modules</a>
-              </Button>
-            </div>
-            <p className="mt-4 text-sm text-muted">
-              After signing in, choose a campus role — Super Admin, Teacher or Student — to explore
-              the seeded Grade 11 Pre-Engineering cohort.
-            </p>
+      <section className="mx-auto grid max-w-6xl gap-6 px-4 pb-6 pt-2 sm:px-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-10 lg:pb-10">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-warn/40 bg-warn-bg px-3 py-1 text-xs font-medium text-ink">
+            Test preview · full site coming soon
           </div>
-          <div className="rounded-xl border border-line bg-navy p-6 text-white shadow-[var(--shadow-card)] sm:p-8">
-            <div className="flex items-center gap-3">
-              <Crest className="h-12 w-12" light />
-              <div>
-                <div className="font-display text-xl font-semibold">AEC LMS</div>
-                <div className="text-xs tracking-[0.16em] text-white/55 uppercase">ecn.edu.pk</div>
-              </div>
-            </div>
-            <dl className="mt-8 grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <dt className="text-white/50">Campus</dt>
-                <dd className="mt-1 font-medium">Nilore · Islamabad</dd>
-              </div>
-              <div>
-                <dt className="text-white/50">Board</dt>
-                <dd className="mt-1 font-medium">FBISE HSSC</dd>
-              </div>
-              <div>
-                <dt className="text-white/50">Streams</dt>
-                <dd className="mt-1 font-medium">Pre-Engineering</dd>
-              </div>
-              <div>
-                <dt className="text-white/50">Motto</dt>
-                <dd className="mt-1 font-medium">Knowledge in service of the nation</dd>
-              </div>
-            </dl>
-            <div className="mt-8 border-t border-white/10 pt-4 text-xs text-white/50">
-              Registrar · +92 51 924 8801 · registrar@ecn.edu.pk
-            </div>
+          <h1 className="mt-5 font-display text-[2.35rem] leading-[1.08] font-semibold tracking-tight text-heading sm:text-5xl">
+            LMS
+          </h1>
+          <p className="mt-2 text-sm font-medium tracking-[0.14em] text-muted uppercase">
+            Learning Management System
+          </p>
+          <p className="mt-4 max-w-xl text-base text-ink-soft sm:text-lg">
+            One campus system for students, teachers and academic staff. Timetables, laboratories,
+            assessments and results — in one place, on phone or desktop.
+          </p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            {!live ? (
+              <div className="h-12 w-40 rounded-lg bg-paper-2" aria-hidden />
+            ) : (
+              <>
+                <SignedOut>
+                  <Button asChild size="lg" className="w-full sm:w-auto">
+                    <Link to="/login">Enter LMS</Link>
+                  </Button>
+                </SignedOut>
+                <SignedIn>
+                  <Button asChild size="lg" className="w-full sm:w-auto">
+                    <Link to="/dashboard">Go to dashboard</Link>
+                  </Button>
+                </SignedIn>
+              </>
+            )}
+            <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+              <a href="#modules">Browse modules</a>
+            </Button>
+          </div>
+          <p className="mt-4 text-sm text-muted">
+            After signing in, choose a campus role — Super Admin, Teacher or Student — or ask an
+            administrator to assign one.
+          </p>
+        </div>
+        <HeroSlider className="h-[16rem] sm:h-[22rem] lg:h-[26rem]" />
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-4 sm:px-5">
+        <div className="grid grid-cols-2 gap-3 rounded-xl border border-line bg-navy p-4 text-white sm:grid-cols-4 sm:p-6">
+          <div>
+            <div className="text-[10px] tracking-[0.16em] text-white/50 uppercase">Product</div>
+            <div className="mt-1 font-medium">LMS</div>
+          </div>
+          <div>
+            <div className="text-[10px] tracking-[0.16em] text-white/50 uppercase">Session</div>
+            <div className="mt-1 font-medium">2025–26</div>
+          </div>
+          <div>
+            <div className="text-[10px] tracking-[0.16em] text-white/50 uppercase">Access</div>
+            <div className="mt-1 font-medium">Phone + web</div>
+          </div>
+          <div>
+            <div className="text-[10px] tracking-[0.16em] text-white/50 uppercase">Build</div>
+            <div className="mt-1 font-medium tabular-nums">{BUILD.number}</div>
           </div>
         </div>
       </section>
 
-      <section id="modules" className="mx-auto max-w-6xl px-5 py-12">
-        <h2 className="font-display text-2xl font-semibold text-navy">What the campus system covers</h2>
+      <section id="modules" className="mx-auto max-w-6xl px-4 py-10 sm:px-5 sm:py-12">
+        <h2 className="font-display text-2xl font-semibold text-heading">What LMS covers</h2>
         <p className="mt-2 max-w-2xl text-sm text-muted">
-          Built for a college of several thousand students: class incharges, subject teachers and
-          the academic office share one register.
+          Built for a college of several thousand students: class incharges, subject teachers and the
+          academic office share one register.
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f) => (
@@ -154,12 +170,7 @@ function Home() {
         </div>
       </section>
 
-      <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-          <span>Atomic Energy Commission College · Rawalpindi / Islamabad</span>
-          <span>Future production domain: www.ecn.edu.pk</span>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
