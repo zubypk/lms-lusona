@@ -63,7 +63,7 @@ function AttendancePage() {
             value={String(data?.sectionId ?? "")}
             onValueChange={(v) => setSectionId(Number(v))}
           >
-            <SelectTrigger className="w-56">
+            <SelectTrigger className="w-full sm:w-56">
               <SelectValue placeholder="Section" />
             </SelectTrigger>
             <SelectContent>
@@ -90,7 +90,7 @@ function AttendancePage() {
               </div>
             ))}
           </div>
-          <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-[var(--shadow-card)]">
+          <div className="lms-table-scroll overflow-x-auto rounded-xl border border-line bg-surface shadow-[var(--shadow-card)]">
             <table className="w-full min-w-[720px] text-left text-xs">
               <thead className="bg-paper text-muted">
                 <tr>
@@ -153,7 +153,7 @@ function AttendancePage() {
                           type="button"
                           onClick={() => setMarks((m) => ({ ...m, [s.id]: st }))}
                           className={cn(
-                            "h-9 rounded-md px-2 text-xs capitalize",
+                            "h-11 min-w-11 rounded-md px-2 text-xs capitalize",
                             (marks[s.id] ?? "present") === st ? "bg-navy text-white" : "bg-paper text-muted",
                           )}
                         >

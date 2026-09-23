@@ -150,7 +150,11 @@ function completionHtml(message: PopupMessage): string {
   try {
     if (window.opener) window.opener.postMessage(msg, window.location.origin);
   } catch (e) {}
-  try { window.close(); } catch (e) {}
+  if (window.opener) {
+    try { window.close(); } catch (e) {}
+  } else {
+    window.location.replace(msg && msg.token ? "/dashboard" : "/login");
+  }
 })();
 </script>
 </body>

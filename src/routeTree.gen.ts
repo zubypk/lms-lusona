@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
+import { Route as HelpRouteRouteImport } from './routes/help/route'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as RefreshRouteImport } from './routes/refresh'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppAttendanceRouteImport } from './routes/_app/attendance'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
@@ -32,6 +34,11 @@ import { Route as AppSubjectsRouteImport } from './routes/_app/subjects'
 import { Route as AppTeachersRouteImport } from './routes/_app/teachers'
 import { Route as AppTimetableRouteImport } from './routes/_app/timetable'
 import { Route as AppUsersRouteImport } from './routes/_app/users'
+import { Route as HelpIndexRouteImport } from './routes/help/index'
+import { Route as HelpAccountRouteImport } from './routes/help/account'
+import { Route as HelpAttendanceRouteImport } from './routes/help/attendance'
+import { Route as HelpEnrolmentRouteImport } from './routes/help/enrolment'
+import { Route as HelpResultsRouteImport } from './routes/help/results'
 import { Route as AppAssignmentsIndexRouteImport } from './routes/_app/assignments.index'
 import { Route as AppAssignmentsIdRouteImport } from './routes/_app/assignments.$id'
 import { Route as AppForumIndexRouteImport } from './routes/_app/forum.index'
@@ -49,6 +56,11 @@ const AppRouteRoute = AppRouteRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HelpRouteRoute = HelpRouteRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -57,6 +69,11 @@ const LoginRoute = LoginRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefreshRoute = RefreshRouteImport.update({
+  id: '/refresh',
+  path: '/refresh',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppAdminRoute = AppAdminRouteImport.update({
@@ -154,6 +171,31 @@ const AppUsersRoute = AppUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const HelpIndexRoute = HelpIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => HelpRouteRoute,
+} as any)
+const HelpAccountRoute = HelpAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => HelpRouteRoute,
+} as any)
+const HelpAttendanceRoute = HelpAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => HelpRouteRoute,
+} as any)
+const HelpEnrolmentRoute = HelpEnrolmentRouteImport.update({
+  id: '/enrolment',
+  path: '/enrolment',
+  getParentRoute: () => HelpRouteRoute,
+} as any)
+const HelpResultsRoute = HelpResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
+  getParentRoute: () => HelpRouteRoute,
+} as any)
 const AppAssignmentsIndexRoute = AppAssignmentsIndexRouteImport.update({
   id: '/assignments/',
   path: '/assignments/',
@@ -192,8 +234,10 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/help': typeof HelpRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/refresh': typeof RefreshRoute
   '/admin': typeof AppAdminRoute
   '/attendance': typeof AppAttendanceRoute
   '/calendar': typeof AppCalendarRoute
@@ -213,6 +257,11 @@ export interface FileRoutesByFullPath {
   '/teachers': typeof AppTeachersRoute
   '/timetable': typeof AppTimetableRoute
   '/users': typeof AppUsersRoute
+  '/help/account': typeof HelpAccountRoute
+  '/help/attendance': typeof HelpAttendanceRoute
+  '/help/enrolment': typeof HelpEnrolmentRoute
+  '/help/results': typeof HelpResultsRoute
+  '/help/': typeof HelpIndexRoute
   '/assignments/$id': typeof AppAssignmentsIdRoute
   '/forum/$id': typeof AppForumIdRoute
   '/quizzes/$id': typeof AppQuizzesIdRoute
@@ -225,6 +274,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/refresh': typeof RefreshRoute
   '/admin': typeof AppAdminRoute
   '/attendance': typeof AppAttendanceRoute
   '/calendar': typeof AppCalendarRoute
@@ -244,6 +294,11 @@ export interface FileRoutesByTo {
   '/teachers': typeof AppTeachersRoute
   '/timetable': typeof AppTimetableRoute
   '/users': typeof AppUsersRoute
+  '/help/account': typeof HelpAccountRoute
+  '/help/attendance': typeof HelpAttendanceRoute
+  '/help/enrolment': typeof HelpEnrolmentRoute
+  '/help/results': typeof HelpResultsRoute
+  '/help': typeof HelpIndexRoute
   '/assignments/$id': typeof AppAssignmentsIdRoute
   '/forum/$id': typeof AppForumIdRoute
   '/quizzes/$id': typeof AppQuizzesIdRoute
@@ -256,8 +311,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteRouteWithChildren
+  '/help': typeof HelpRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/refresh': typeof RefreshRoute
   '/_app/admin': typeof AppAdminRoute
   '/_app/attendance': typeof AppAttendanceRoute
   '/_app/calendar': typeof AppCalendarRoute
@@ -277,6 +334,11 @@ export interface FileRoutesById {
   '/_app/teachers': typeof AppTeachersRoute
   '/_app/timetable': typeof AppTimetableRoute
   '/_app/users': typeof AppUsersRoute
+  '/help/account': typeof HelpAccountRoute
+  '/help/attendance': typeof HelpAttendanceRoute
+  '/help/enrolment': typeof HelpEnrolmentRoute
+  '/help/results': typeof HelpResultsRoute
+  '/help/': typeof HelpIndexRoute
   '/_app/assignments/$id': typeof AppAssignmentsIdRoute
   '/_app/forum/$id': typeof AppForumIdRoute
   '/_app/quizzes/$id': typeof AppQuizzesIdRoute
@@ -289,8 +351,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/help'
     | '/login'
     | '/onboarding'
+    | '/refresh'
     | '/admin'
     | '/attendance'
     | '/calendar'
@@ -310,6 +374,11 @@ export interface FileRouteTypes {
     | '/teachers'
     | '/timetable'
     | '/users'
+    | '/help/account'
+    | '/help/attendance'
+    | '/help/enrolment'
+    | '/help/results'
+    | '/help/'
     | '/assignments/$id'
     | '/forum/$id'
     | '/quizzes/$id'
@@ -322,6 +391,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/onboarding'
+    | '/refresh'
     | '/admin'
     | '/attendance'
     | '/calendar'
@@ -341,6 +411,11 @@ export interface FileRouteTypes {
     | '/teachers'
     | '/timetable'
     | '/users'
+    | '/help/account'
+    | '/help/attendance'
+    | '/help/enrolment'
+    | '/help/results'
+    | '/help'
     | '/assignments/$id'
     | '/forum/$id'
     | '/quizzes/$id'
@@ -352,8 +427,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
+    | '/help'
     | '/login'
     | '/onboarding'
+    | '/refresh'
     | '/_app/admin'
     | '/_app/attendance'
     | '/_app/calendar'
@@ -373,6 +450,11 @@ export interface FileRouteTypes {
     | '/_app/teachers'
     | '/_app/timetable'
     | '/_app/users'
+    | '/help/account'
+    | '/help/attendance'
+    | '/help/enrolment'
+    | '/help/results'
+    | '/help/'
     | '/_app/assignments/$id'
     | '/_app/forum/$id'
     | '/_app/quizzes/$id'
@@ -385,8 +467,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
+  HelpRouteRoute: typeof HelpRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
+  RefreshRoute: typeof RefreshRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -406,6 +490,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -418,6 +509,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refresh': {
+      id: '/refresh'
+      path: '/refresh'
+      fullPath: '/refresh'
+      preLoaderRoute: typeof RefreshRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/admin': {
@@ -553,6 +651,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppUsersRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/help/': {
+      id: '/help/'
+      path: '/'
+      fullPath: '/help/'
+      preLoaderRoute: typeof HelpIndexRouteImport
+      parentRoute: typeof HelpRouteRoute
+    }
+    '/help/account': {
+      id: '/help/account'
+      path: '/account'
+      fullPath: '/help/account'
+      preLoaderRoute: typeof HelpAccountRouteImport
+      parentRoute: typeof HelpRouteRoute
+    }
+    '/help/attendance': {
+      id: '/help/attendance'
+      path: '/attendance'
+      fullPath: '/help/attendance'
+      preLoaderRoute: typeof HelpAttendanceRouteImport
+      parentRoute: typeof HelpRouteRoute
+    }
+    '/help/enrolment': {
+      id: '/help/enrolment'
+      path: '/enrolment'
+      fullPath: '/help/enrolment'
+      preLoaderRoute: typeof HelpEnrolmentRouteImport
+      parentRoute: typeof HelpRouteRoute
+    }
+    '/help/results': {
+      id: '/help/results'
+      path: '/results'
+      fullPath: '/help/results'
+      preLoaderRoute: typeof HelpResultsRouteImport
+      parentRoute: typeof HelpRouteRoute
+    }
     '/_app/assignments/': {
       id: '/_app/assignments/'
       path: '/assignments'
@@ -665,11 +798,33 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
   AppRouteRouteChildren,
 )
 
+interface HelpRouteRouteChildren {
+  HelpAccountRoute: typeof HelpAccountRoute
+  HelpAttendanceRoute: typeof HelpAttendanceRoute
+  HelpEnrolmentRoute: typeof HelpEnrolmentRoute
+  HelpResultsRoute: typeof HelpResultsRoute
+  HelpIndexRoute: typeof HelpIndexRoute
+}
+
+const HelpRouteRouteChildren: HelpRouteRouteChildren = {
+  HelpAccountRoute: HelpAccountRoute,
+  HelpAttendanceRoute: HelpAttendanceRoute,
+  HelpEnrolmentRoute: HelpEnrolmentRoute,
+  HelpResultsRoute: HelpResultsRoute,
+  HelpIndexRoute: HelpIndexRoute,
+}
+
+const HelpRouteRouteWithChildren = HelpRouteRoute._addFileChildren(
+  HelpRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
+  HelpRouteRoute: HelpRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
+  RefreshRoute: RefreshRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

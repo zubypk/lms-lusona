@@ -67,15 +67,25 @@ function setBearerToken(token: string | null): void {
   }
 }
 
+/** Attach a session token from campus desk entry or a Google/X pop-up. */
+export function applySessionToken(token: string) {
+  setBearerToken(token);
+}
+
 /**
- * The sandbox live preview runs this app inside an iframe on a `*.grok-sandbox.com`
- * host, where a full-page redirect to the broker can't work — so sign-in uses a
- * popup there and a normal redirect everywhere else.
+ * The sandbox live preview runs this app inside an iframe (partitioned cookies),
+ * where a full-page redirect to the broker can't work — so sign-in uses a popup
+ * there and a normal redirect everywhere else.
  */
 function inLivePreview(): boolean {
+  if (typeof window === "undefined") return false;
+  if (window.parent !== window) return true;
+  const host = window.location.hostname.toLowerCase();
   return (
-    typeof window !== "undefined" &&
-    window.location.hostname.endsWith(".grok-sandbox.com")
+    host === "grok-sandbox.com" ||
+    host.endsWith(".grok-sandbox.com") ||
+    host.includes(".preview.") ||
+    host.endsWith(".grok.com")
   );
 }
 
@@ -164,9 +174,9 @@ export async function signIn(
 function openSignInPopup(providerId: string): Window | null {
   const origin = window.location.origin;
   const url = `${origin}/auth/popup?providerId=${encodeURIComponent(providerId)}`;
-  // Unique name per attempt so a prior attempt stuck on the SPA is not reused.
-  const name = `grok-signin-${Date.now()}`;
-  return window.open(url, name, "popup,width=500,height=650");
+  // Top-level tab, not a named "popup" feature — Grok's preview iframe blocks
+  // feature-string pop-ups more often than a plain new tab.
+  return window.open(url, `lms-signin-${Date.now()}`);
 }
 
 /**

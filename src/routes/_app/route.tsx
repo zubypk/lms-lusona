@@ -22,7 +22,7 @@ function AppLayout() {
 
 function ShellSkeleton() {
   return (
-    <div className="flex min-h-dvh bg-paper">
+    <div className="flex min-h-dvh">
       <div className="hidden w-[16.5rem] bg-navy md:block" />
       <div className="flex-1 p-6">
         <Skeleton className="h-8 w-48" />

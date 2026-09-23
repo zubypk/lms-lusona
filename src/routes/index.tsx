@@ -15,6 +15,7 @@ import { Wordmark } from "@/components/brand/crest";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut } from "@/lib/auth/gates";
+import { openCampusDesk } from "@/lib/lms/enter-campus";
 import { BUILD } from "@/lib/build";
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -54,6 +55,26 @@ const FEATURES = [
 
 const MARQUEE =
   "Welcome to LMS · Class teachers enrol with Name, Father name and Roll no · Student login issued automatically · Subject teachers see only their classes";
+
+function EnterLmsButton({ size = "lg" }: { size?: "default" | "lg" }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <Button
+      size={size}
+      className="w-full sm:w-auto"
+      disabled={busy}
+      onClick={() => {
+        setBusy(true);
+        void openCampusDesk().catch(() => {
+          setBusy(false);
+          window.location.assign("/dashboard");
+        });
+      }}
+    >
+      {busy ? "Opening campus…" : "Enter LMS"}
+    </Button>
+  );
+}
 
 function Home() {
   const [live, setLive] = useState(false);
@@ -109,13 +130,11 @@ function Home() {
             ) : (
               <>
                 <SignedOut>
-                  <Button asChild size="lg" className="w-full sm:w-auto">
-                    <Link to="/login">Enter LMS</Link>
-                  </Button>
+                  <EnterLmsButton />
                 </SignedOut>
                 <SignedIn>
                   <Button asChild size="lg" className="w-full sm:w-auto">
-                    <Link to="/dashboard">Go to dashboard</Link>
+                    <Link to="/dashboard">Enter LMS</Link>
                   </Button>
                 </SignedIn>
               </>
@@ -123,10 +142,13 @@ function Home() {
             <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
               <a href="#modules">Browse modules</a>
             </Button>
+            <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+              <Link to="/help">Read help</Link>
+            </Button>
           </div>
           <p className="mt-4 text-sm text-muted">
-            After signing in, choose a campus role — Super Admin, Teacher or Student — or ask an
-            administrator to assign one.
+            Enter LMS opens the campus desk. Sign in is optional — use it for a named Google, X or email
+            account.
           </p>
         </div>
         <HeroSlider className="h-[16rem] sm:h-[22rem] lg:h-[26rem]" />

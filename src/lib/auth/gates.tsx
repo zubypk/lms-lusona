@@ -98,7 +98,8 @@ export function UserButton() {
     noGateSessionOnServer,
   );
   if (!user) return null;
-  const label = user.displayName ?? user.primaryEmail ?? "Account";
+  const raw = user.displayName ?? user.primaryEmail ?? "Account";
+  const label = /^(grok(\s+(user|app))?|xai|x\.ai)$/i.test(raw) ? "LMS member" : raw;
   return (
     <div className="flex items-center gap-2">
       {user.profileImageUrl ? (
@@ -112,7 +113,7 @@ export function UserButton() {
           {label.charAt(0).toUpperCase()}
         </span>
       )}
-      <span className="text-sm font-medium">{label}</span>
+      <span className="hidden text-sm font-medium sm:inline">{label}</span>
       {authEnabled && !gateSession && (
         <button
           type="button"

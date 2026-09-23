@@ -6,3 +6,5 @@ export * from "./academic";
 export * from "./people";
 export * from "./learning";
 export * from "./records";
+export * from "./admin";
+export * from "./guest";

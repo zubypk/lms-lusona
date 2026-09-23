@@ -41,7 +41,10 @@ PROJECT NAME
 AEC Learning Management System (AEC LMS)
 
 Future Production Domain:
-www.ecn.edu.pk
+lms.lusona.org
+
+College mail domain:
+lms.edu.pk (replaces ecn.edu.pk)
 
 Temporary Domain:
 Use any deployment domain/subdomain available on your platform.
@@ -74,11 +77,13 @@ SUPER ADMIN FEATURES
 • Manage Subjects
 • Manage Teachers
 • Manage Students
+• Manage Users & role assignment
 • Manage Timetables
 • Manage Results
 • Manage Notifications
 • View Reports
 • Manage System Settings
+• Themes, backgrounds, marquee and build notices
 
 CLASS INCHARGE FEATURES
 
@@ -367,6 +372,7 @@ Create a modern educational dashboard similar to:
 Use:
 
 • Professional blue/white theme
+• Theme and background dropdowns
 • Responsive design
 • Clean navigation
 • Mobile-friendly layouts

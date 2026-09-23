@@ -42,7 +42,7 @@ function TimetablePage() {
               value={String(data?.sectionId ?? "")}
               onValueChange={(v) => setSectionId(Number(v))}
             >
-              <SelectTrigger className="w-56">
+              <SelectTrigger className="w-full sm:w-56">
                 <SelectValue placeholder="Section" />
               </SelectTrigger>
               <SelectContent>
@@ -60,7 +60,7 @@ function TimetablePage() {
       {q.isPending ? (
         <Skeleton className="h-80" />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-[var(--shadow-card)]">
+        <div className="lms-table-scroll overflow-x-auto rounded-xl border border-line bg-surface shadow-[var(--shadow-card)]">
           <table className="w-full min-w-[800px] text-left text-sm">
             <thead className="bg-paper text-xs tracking-wide text-muted uppercase">
               <tr>

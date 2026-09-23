@@ -44,7 +44,7 @@ function CalendarPage() {
         <div className="space-y-6">
           {grouped.map(([month, events]) => (
             <div key={month}>
-              <h2 className="mb-2 font-display text-lg font-semibold text-navy">
+              <h2 className="mb-2 font-display text-lg font-semibold text-heading">
                 {new Date(month + "-01").toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
               </h2>
               <div className="space-y-2">

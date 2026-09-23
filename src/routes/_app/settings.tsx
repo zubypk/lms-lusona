@@ -1,11 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PageHeader, Field } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/misc";
+import { BUILD } from "@/lib/build";
 import { formatDateTime, getSettings, listAudit, saveSettings } from "@/lib/lms";
 import { queryClient } from "@/lib/query-client";
 
@@ -26,6 +27,7 @@ function SettingsPage() {
     onSuccess: () => {
       toast.success("Settings saved");
       queryClient.invalidateQueries({ queryKey: ["settings"] });
+      queryClient.invalidateQueries({ queryKey: ["public-campus"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -33,19 +35,31 @@ function SettingsPage() {
   if (settings.isPending) return <Skeleton className="h-64" />;
   if (settings.error) return <p className="text-sm text-danger">{(settings.error as Error).message}</p>;
 
-  const fields = [
-    ["college_name", "College name"],
-    ["college_short", "Short name"],
-    ["city", "City"],
-    ["motto", "Motto"],
-    ["address", "Address"],
-    ["phone", "Phone"],
-    ["email", "Registrar email"],
-  ] as const;
+  const fields: { key: string; label: string; multiline?: boolean }[] = [
+    { key: "college_name", label: "College name" },
+    { key: "college_short", label: "Short name" },
+    { key: "city", label: "City" },
+    { key: "motto", label: "Motto" },
+    { key: "address", label: "Address" },
+    { key: "phone", label: "Phone" },
+    { key: "email", label: "Registrar email" },
+    { key: "domain", label: "Public domain" },
+    { key: "email_domain", label: "Mail domain" },
+    { key: "marquee", label: "Scrolling marquee", multiline: true },
+    { key: "release_message", label: "New-build message", multiline: true },
+  ];
 
   return (
     <div>
-      <PageHeader title="System settings" subtitle="Institution identity used across notices and gazettes." />
+      <PageHeader
+        title="System settings"
+        subtitle={`Institution identity used across notices and gazettes. Running build ${BUILD.number}.`}
+        actions={
+          <Button asChild variant="outline">
+            <Link to="/admin">Open admin panel</Link>
+          </Button>
+        }
+      />
       <form
         className="grid max-w-xl gap-3 rounded-xl border border-line bg-surface p-5"
         onSubmit={(e) => {
@@ -53,9 +67,13 @@ function SettingsPage() {
           mut.mutate();
         }}
       >
-        {fields.map(([key, label]) => (
-          <Field key={key} label={label}>
-            <Input value={form[key] ?? ""} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))} />
+        {fields.map((f) => (
+          <Field key={f.key} label={f.label}>
+            {f.multiline ? (
+              <Textarea value={form[f.key] ?? ""} onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))} />
+            ) : (
+              <Input value={form[f.key] ?? ""} onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))} />
+            )}
           </Field>
         ))}
         <Button type="submit" disabled={mut.isPending}>

@@ -1,6 +1,6 @@
 import { pendingMigrations } from "../../scripts/migration-plan.mjs";
 
-/** Which database backend is active. */
+/** Which database backend is active. LMS ads and campus settings live in migrations/. */
 export type DbSource = "neon" | "pglite";
 
 // An empty/whitespace DATABASE_URL (an easy misconfig in deploy UIs) must mean

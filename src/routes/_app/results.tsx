@@ -29,7 +29,7 @@ function ResultsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "aec-results.csv";
+    a.download = "lms-results.csv";
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -45,7 +45,7 @@ function ResultsPage() {
               value={String(data?.examId ?? "")}
               onValueChange={(v) => setExamId(Number(v))}
             >
-              <SelectTrigger className="w-64">
+              <SelectTrigger className="w-full sm:w-64">
                 <SelectValue placeholder="Examination" />
               </SelectTrigger>
               <SelectContent>
@@ -68,7 +68,7 @@ function ResultsPage() {
       {q.isPending ? (
         <Skeleton className="h-80" />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-[var(--shadow-card)]">
+        <div className="lms-table-scroll overflow-x-auto rounded-xl border border-line bg-surface shadow-[var(--shadow-card)]">
           <table className="w-full min-w-[800px] text-left text-sm">
             <thead className="border-b border-line bg-paper text-xs text-muted uppercase">
               <tr>

@@ -1,11 +1,15 @@
-# AEC Learning Management System
+# LMS
 
-Canonical source for the campus LMS now lives in:
+Learning Management System for students, teachers and academic staff.
 
-**https://github.com/zubypk/lms-lusona**
+## What it includes
 
-- Portal: lms.lusona.org
-- College mail: @lms.edu.pk (replaces ecn.edu.pk)
-- Build: 2026.09.13.2
+- Role-based campus: Super Admin, Academic Admin, Class Incharge, Teacher, Student
+- Admin panel with directory lists and Users & roles assignment
+- Courses, materials, assignments, quizzes, attendance, results, forums, live classes
+- Phone layout with bottom navigation, plus desktop sidebar
+- Themes and background controls
 
-Use `lms-lusona` for themes, the landing slider, admin user-role assignment, and ongoing work.
+## Sign in
+
+Create an account with email, Google, or X. On first entry pick a campus role, or ask a Super Admin to assign one from **Users & roles**.

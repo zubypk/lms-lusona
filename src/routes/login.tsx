@@ -1,13 +1,14 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AppearanceControls } from "@/components/appearance/controls";
 import { Crest, Wordmark } from "@/components/brand/crest";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { GROK_PROVIDERS, authClient, authEnabled, signIn } from "@/lib/auth/client";
+import { GROK_PROVIDERS, applySessionToken, authClient, authEnabled } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { openCampusDesk } from "@/lib/lms/enter-campus";
 
 export const Route = createFileRoute("/login")({ component: Login });
 
@@ -18,8 +19,22 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
-  const [busy, setBusy] = useState<"email" | "google" | "twitter" | null>(null);
+  const [busy, setBusy] = useState<"email" | "google" | "twitter" | "desk" | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data as { source?: string; token?: string | null } | undefined;
+      if (!data || data.source !== "grok-auth-popup") return;
+      if (data.token) {
+        applySessionToken(data.token);
+        window.location.assign("/dashboard");
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
 
   if (isPending) {
     return <div className="grid min-h-dvh place-items-center text-sm text-muted">Loading session…</div>;
@@ -53,28 +68,18 @@ function Login() {
       }
       window.location.href = "/dashboard";
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Sign-in failed";
+      const raw = err instanceof Error ? err.message : "Sign-in failed";
+      const message =
+        /invalid origin/i.test(raw)
+          ? mode === "up"
+            ? "Could not create the account from this window. Try again, or use a campus email the class teacher issued."
+            : "Could not reach campus login from this window. Try email again in a moment."
+          : raw;
       setFormError(message);
       toast.error(message);
     } finally {
       setBusy(null);
     }
-  }
-
-  function onOauth(providerId: string, key: "google" | "twitter") {
-    setFormError(null);
-    setBusy(key);
-    void signIn(providerId, { callbackURL: "/dashboard", errorCallbackURL: "/login" }).catch((err: unknown) => {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Could not open the sign-in window. Allow pop-ups, or use email instead.";
-      setFormError(
-        `Google / X needs an allowed pop-up in this preview. ${message} Use email and password — that is the solid login for this test campus.`,
-      );
-      toast.error(message);
-      setBusy(null);
-    });
   }
 
   return (
@@ -210,12 +215,32 @@ function Login() {
 
               <div className="my-5 flex items-center gap-3 text-xs text-faint">
                 <span className="h-px flex-1 bg-line" />
-                optional window
+                or
+                <span className="h-px flex-1 bg-line" />
+              </div>
+              <Button
+                type="button"
+                className="w-full"
+                disabled={busy !== null}
+                onClick={() => {
+                  setBusy("desk");
+                  void openCampusDesk().catch((err: unknown) => {
+                    setBusy(null);
+                    toast.error(err instanceof Error ? err.message : "Could not open campus");
+                  });
+                }}
+              >
+                {busy === "desk" ? "Opening campus…" : "Enter LMS without signing in"}
+              </Button>
+              <div className="my-5 flex items-center gap-3 text-xs text-faint">
+                <span className="h-px flex-1 bg-line" />
+                Google / X
                 <span className="h-px flex-1 bg-line" />
               </div>
               <div className="grid gap-2">
                 {GROK_PROVIDERS.map((p) => {
                   const key = p.idp === "google" ? "google" : "twitter";
+                  const href = `/auth/popup?providerId=${encodeURIComponent(p.providerId)}`;
                   return (
                     <Button
                       key={p.providerId}
@@ -223,15 +248,33 @@ function Login() {
                       variant="outline"
                       className="w-full"
                       disabled={busy !== null}
-                      onClick={() => onOauth(p.providerId, key)}
+                      asChild
                     >
-                      {busy === key ? "Opening window…" : `Continue with ${p.label}`}
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="opener"
+                    onClick={(event) => {
+                      setFormError(null);
+                      setBusy(key);
+                      const opened = window.open(href, `lms-signin-${Date.now()}`);
+                      if (opened) event.preventDefault();
+                    }}
+                      >
+                        {busy === key ? "Opening Google…" : `Continue with ${p.label}`}
+                      </a>
                     </Button>
                   );
                 })}
               </div>
               <p className="mt-3 text-[11px] text-muted">
-                Google and X open a pop-up. If nothing happens, stay on email — that login is stored on this campus.
+                Google and X open a new tab. If the tab is blocked, use Enter LMS — that opens the campus
+                desk directly.
+              </p>
+              <p className="mt-4 text-center text-sm">
+                <Link to="/help" className="text-primary underline-offset-2 hover:underline">
+                  Help for parents and students
+                </Link>
               </p>
             </>
           ) : (

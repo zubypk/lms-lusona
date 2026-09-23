@@ -1,10 +1,10 @@
 export const BUILD = {
-  number: "2026.09.13.6",
-  id: "lms-b20260913-6",
+  number: "2026.09.13.10",
+  id: "lms-b20260913-10",
   releasedAt: "2026-09-13",
-  title: "Class teacher desk",
+  title: "Rainbow & palettes",
   message:
-    "Class teachers enrol their own class with Name, Father name and Roll no. Student email and password are issued automatically. Subject teachers only see their assigned classes for quizzes, assignments, materials, attendance and Google Meet.",
+    "Welcome bar is rainbow. Themes now include Light and Dark families, and type colour follows the theme you pick.",
 } as const;
 
 export const CAMPUS_DOMAIN = "lms.lusona.org";

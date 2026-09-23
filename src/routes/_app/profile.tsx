@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, Skeleton } from "@/components/ui/misc";
 import { ROLES, getMyProfile, roleLabel, switchRole } from "@/lib/lms";
+import { publicDisplayName } from "@/lib/utils";
 import { queryClient } from "@/lib/query-client";
 import type { Role } from "@/lib/lms/types";
 
@@ -30,9 +31,9 @@ function ProfilePage() {
       <PageHeader title="My profile" subtitle="Campus identity linked to your signed-in account." />
       <div className="rounded-xl border border-line bg-surface p-6 shadow-[var(--shadow-card)]">
         <div className="flex items-center gap-4">
-          <Avatar name={p.displayName} src={p.photoUrl} size={64} />
+          <Avatar name={publicDisplayName(p.displayName)} src={p.photoUrl} size={64} />
           <div>
-            <div className="font-display text-2xl font-semibold">{p.displayName}</div>
+            <div className="font-display text-2xl font-semibold">{publicDisplayName(p.displayName)}</div>
             <div className="text-sm text-muted">{p.email}</div>
             <Badge className="mt-2">{roleLabel(p.role)}</Badge>
           </div>

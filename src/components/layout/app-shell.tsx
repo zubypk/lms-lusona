@@ -17,6 +17,7 @@ import {
   Video,
   ClipboardList,
   UserRound,
+  RefreshCw,
   School,
   LineChart,
   Shield,
@@ -33,6 +34,7 @@ import { Wordmark } from "@/components/brand/crest";
 import { CampusMarquee } from "@/components/brand/marquee";
 import { AppearanceControls } from "@/components/appearance/controls";
 import { MusicToggle } from "@/components/brand/campus-music";
+import { HardRefreshButton } from "@/components/brand/hard-refresh";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -191,9 +193,11 @@ function AccountMenu({ actor }: { actor: Actor }) {
           <UserRound className="h-4 w-4" />
           Profile
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => void navigate({ to: "/notifications" })}>
-          <Bell className="h-4 w-4" />
-          Notices
+        <DropdownMenuItem onSelect={() => {
+          window.location.assign(`/refresh?t=${Date.now()}`);
+        }}>
+          <RefreshCw className="h-4 w-4" />
+          Hard refresh
         </DropdownMenuItem>
         {canSignOut ? (
           <>
@@ -274,7 +278,7 @@ export function AppShell({ actor }: { actor: Actor }) {
           </Link>
         </div>
         <NavBody actor={actor} />
-        <div className="border-t border-white/10 p-4">
+        <div className="mt-auto border-t border-white/10 p-3">
           <div className="text-[10px] tracking-[0.14em] text-white/40 uppercase">Session 2025–26</div>
           <div className="mt-1 text-xs text-white/70">LMS</div>
         </div>
@@ -296,6 +300,9 @@ export function AppShell({ actor }: { actor: Actor }) {
             <div className="hidden md:block">
               <AppearanceControls />
             </div>
+            <div className="md:hidden">
+              <HardRefreshButton />
+            </div>
             <Button asChild variant="ghost" size="icon" className="hidden sm:inline-flex" aria-label="Notices">
               <Link to="/notifications">
                 <Bell className="h-5 w-5" />
@@ -308,7 +315,7 @@ export function AppShell({ actor }: { actor: Actor }) {
             <AccountMenu actor={actor} />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 md:pb-6">
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 pb-[calc(4.75rem+env(safe-area-inset-bottom))] sm:px-6 md:pb-6">
           <Outlet />
         </main>
         <div className="hidden md:block">
